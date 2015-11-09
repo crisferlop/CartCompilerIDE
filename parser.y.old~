@@ -1,0 +1,514 @@
+%{
+	#include <stdio.h>
+	#include <string.h>
+	#include <vector>
+	#include "varint.h"
+	#include "ide.h"
+	#include "stdlib.h"
+	#include "qvariant.h"
+	long line_counter = 1L;
+	short err = 0;
+	short debug = 0;
+	long block = 0;
+	std::vector< VarInt * > BlockList;
+	std::vector< char * > spaces;
+	IDE *ide = 0;
+%}
+
+%union{
+	char* str;
+	char* space;
+	int integer;
+}
+
+
+%token DEFINE
+%token AS
+%token BLOCKS
+%token VALUE_SENTENCE
+%token SET
+%token OUT
+%token FOR
+%token GO
+%token <str> BACK
+%token <str> STRAIGHT
+%token TILL
+%token TURN
+%token LEFT
+%token RIGHT
+%token KEEP
+%token GOING
+%token SKIP
+%token KEEPEND
+%token FOR_CYCLE
+%token TIMES
+%token LEFT_SQUARE_BRACKED
+%token WALK
+%token RIGHT_SQUARE_BRACKED
+%token FOREND
+%token WHEN
+%token THEN
+%token WHEND
+%token START
+%token STOP
+%token ON
+%token REST
+%token <integer> VALUE
+%token <str> IDENTIFIER
+%token <space> WHITE_SPACE
+%token DOTCOMA
+%token OPERATOR
+%token LEFT_BLOCK_BRACKED
+%token RIGHT_BLOCK_BRACKED
+
+%token EQUAL
+%token NOT_EQUAL
+%token HIGH
+%token LESS
+%token EQUAL_HIGH
+%token EQUAL_LESS
+%token PRINT
+%token <space>EMPTY;
+
+
+%type <integer> mathematicExpresion
+%type <integer> aValue
+%type <str> error
+
+
+%start initial
+
+
+%%
+
+initial:
+	WHITE_SPACE
+{
+	printCurrentSpace();
+} 
+	|WHITE_SPACE
+{
+	printCurrentSpace();
+} initial 
+	| expresion
+	| expresion WHITE_SPACE
+{
+	printCurrentSpace();
+}
+	| expresion WHITE_SPACE
+{
+		printCurrentSpace();
+} initial
+;
+
+expresion:
+    WHEN WHITE_SPACE 
+{
+	printResevedWord("When");
+	printCurrentSpace();
+}
+	condition
+	WHITE_SPACE THEN
+{
+	printCurrentSpace();
+	printResevedWord("Then");
+}
+
+	leftBBracked
+	initial 
+
+	rightBBracked WHEND 
+{
+	printResevedWord("Whend");
+}
+
+
+endSentence
+
+    | FOR_CYCLE WHITE_SPACE 
+
+{
+	printResevedWord("For");
+	printCurrentSpace();
+}
+	aValue WHITE_SPACE TIMES
+
+{
+	printCurrentSpace();
+	printResevedWord("Times");
+}
+ 
+	leftSQBracked WALK WHITE_SPACE
+{
+	printResevedWord("Walk");
+	printCurrentSpace();
+}
+	aValue WHITE_SPACE 
+{
+	printCurrentSpace();
+
+}
+
+
+	identif
+
+	rightSQBracked
+	
+	leftBBracked
+
+	initial 
+
+	rightBBracked FOREND
+{
+	printResevedWord("ForEnd");
+} 
+	endSentence
+    | simple_expresion
+;
+
+
+
+simple_expresion:
+    | START 
+{
+	printResevedWord("Start");
+
+} 
+endSentence
+    | STOP {
+	printResevedWord("Stop");
+} 
+endSentence
+    | TURN WHITE_SPACE ON 
+{
+	printResevedWord("Turn");
+	printCurrentSpace();
+	printResevedWord("On");
+
+} 
+
+endSentence
+    | REST WHITE_SPACE 
+{
+	printResevedWord("Rest");
+	printCurrentSpace();
+}
+	restcontinue 
+
+| PRINT WHITE_SPACE
+{
+	printResevedWord("print");
+	printCurrentSpace();
+}
+ aValue endSentence
+
+;
+
+
+leftSQBracked:
+	WHITE_SPACE LEFT_SQUARE_BRACKED WHITE_SPACE
+{
+	printCurrentSpace();
+	printOperator('[');
+	printCurrentSpace();
+}
+	| LEFT_SQUARE_BRACKED WHITE_SPACE
+{
+	printOperator('[');
+	printCurrentSpace();
+}
+	| WHITE_SPACE LEFT_SQUARE_BRACKED
+{
+	printCurrentSpace();
+	printOperator('[');
+}
+	| LEFT_SQUARE_BRACKED
+{
+	printOperator('[');
+}
+;
+
+rightSQBracked:
+	WHITE_SPACE RIGHT_SQUARE_BRACKED
+{
+	printCurrentSpace();
+	printOperator(']');
+}
+	| RIGHT_SQUARE_BRACKED
+{
+	printOperator(']');
+}
+;
+
+leftBBracked:
+
+	WHITE_SPACE LEFT_BLOCK_BRACKED
+{
+	printCurrentSpace();
+	printOperator('{');
+}
+	| LEFT_BLOCK_BRACKED 
+{
+	printOperator('{');
+}
+;
+
+
+rightBBracked:
+	RIGHT_BLOCK_BRACKED
+{
+	printOperator('}');
+}
+	| RIGHT_BLOCK_BRACKED WHITE_SPACE
+{
+	printOperator('}');
+	printCurrentSpace();
+}
+;
+
+
+goContinue:
+	Ydirection endSentence
+	| Ydirection WHITE_SPACE {printCurrentSpace();}
+	goContinue2
+;
+
+goContinue2:
+	TILL {printResevedWord("Till");}
+	goContinue3
+	| error 
+
+{
+	yyerrok;printError($1);
+	fprintf(stderr,"[Error  goContinue 2]: encontrado %s at line %ld esperado Till\n", yytext,line_counter);
+    	yyclearin;
+}
+	
+	goContinue3
+
+;
+
+goContinue3:
+	WHITE_SPACE {printCurrentSpace();} aValue goContinue4
+	| WHITE_SPACE error goContinue4
+{
+	printCurrentSpace();
+	yyerrok;printError($1);
+	fprintf(stderr,"[Error goContinue 3]: encontrado %s at line %ld esperado un valor o un identificador\n", yytext,line_counter);
+    	yyclearin;
+}
+;
+
+goContinue4:
+	 WHITE_SPACE BLOCKS {printCurrentSpace();printResevedWord("Blocks");} endSentence
+	| error endSentence
+{
+	yyerrok;printError($1);
+	fprintf(stderr,"[Error  goContinue 4]: encontrado %s at line %ld esperado Blocks error corregido\n", yytext,line_counter);
+    	yyclearin;
+}
+;
+
+
+identif:
+IDENTIFIER {printIdentifier($1);}
+;
+
+
+setOutFor:
+SET WHITE_SPACE 
+OUT WHITE_SPACE 
+FOR WHITE_SPACE 
+{
+	printResevedWord("set");
+	printCurrentSpace();
+	printResevedWord("out");
+	printCurrentSpace();
+	printResevedWord("for");
+	printCurrentSpace();
+}
+;
+
+endSentence:
+	DOTCOMA {printDotComma(); }
+	| WHITE_SPACE DOTCOMA 
+		{
+			printCurrentSpace();
+			printDotComma();
+		}
+	| error 
+{
+	yyerrok;printError($1);
+	fprintf(stderr,"[Error Final line Case 1]: encontrado %s at line %ld esperado \";\" error corregido\n", yytext,line_counter);
+    	yyclearin;
+}
+	| error DOTCOMA
+{
+	yyerrok;printError($1); printDotComma();
+	fprintf(stderr,"[Error Final line Case 2]: encontrado %s at line %ld esperado \";\" error corregido\n", $1,line_counter);
+    	yyclearin;
+}
+;
+
+
+Ydirection:
+    STRAIGHT {printDirecction("Straight");}
+    | BACK	{printf("in Back\n");printDirecction("Back");}
+;
+
+turndirection:
+    LEFT	{printDirecction("Left");}
+    | RIGHT	{printDirecction("Right");}
+    | error 
+{
+	yyerrok;printError(yytext);
+	fprintf(stderr,"[Error]: encontrado %s at line %ld esperado direccion (Left o Right)\n", yytext,line_counter);
+    	yyclearin;
+}
+    ;
+
+mathematicExpresion:
+    aValue
+    | aValue OPERATOR {printOperator('+');} mathematicExpresion
+;
+
+aValue:
+    IDENTIFIER 
+	{
+		printIdentifier($1);
+	}
+
+    | VALUE	{printNumberValue($1);}
+    ;
+
+
+condition:
+    aValue WHITE_SPACE {printCurrentSpace();} comparator WHITE_SPACE {printCurrentSpace();} aValue
+    ;
+
+
+comparator:
+    EQUAL {printOperator('=');}
+    | NOT_EQUAL {printOperator('!');printOperator('=');}
+    | HIGH {printOperator('>');}
+    | LESS {printOperator('<');}
+    | EQUAL_HIGH {printOperator('>');printOperator('=');}
+    | EQUAL_LESS {printOperator('<');printOperator('=');}
+;
+
+
+
+
+restcontinue:
+
+	FOR WHITE_SPACE
+{
+	printResevedWord("for");
+	printCurrentSpace();
+}
+	rescontinue2
+	
+	| error 
+{
+	yyerrok;printError(yytext);
+	fprintf(stderr,"[Error]: encontrado %s at line %ld esperado for\n", yytext,line_counter);
+    	yyclearin;
+}
+	WHITE_SPACE 
+{
+	printCurrentSpace();
+}
+	rescontinue2
+
+
+;
+
+rescontinue2:
+	aValue endSentence
+
+	| error endSentence
+{
+	yyerrok;printError($1);
+	fprintf(stderr,"[Error]: encontrado %s at line %ld esperado un valor o un identificador\n", yytext,line_counter);
+    	yyclearin;
+}
+;
+
+
+
+
+%%
+
+#include "lex.yy.c"
+int test(const char *s, IDE * pide){
+	ide = pide;
+	yyin = fopen(s,"r");
+	yyparse();
+	fclose(yyin);
+	return 0;
+}
+
+void printResevedWord(QString word){
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	ide->ui->langu->insertHtml (QString("<font color=\"#237355\"><b>").append(word).append("</b></font>"));
+	ide->ui->langu->moveCursor (QTextCursor::End);
+}
+
+void printCurrentSpace(){
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	if (spaces.size() > 0){
+	ide->ui->langu->insertPlainText(spaces.front());
+	free(spaces.front());
+	spaces.erase(spaces.begin());
+	}
+	ide->ui->langu->moveCursor (QTextCursor::End);
+}
+
+void printNumberValue(int num){
+	QVariant word(num);
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	ide->ui->langu->insertHtml (QString("<font color=\"#B7CE06\">").append(word.toString()).append("</font>"));
+	ide->ui->langu->moveCursor (QTextCursor::End);
+
+}
+
+void printIdentifier(QString id){
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(id).append("</b></font>"));
+	ide->ui->langu->moveCursor (QTextCursor::End);
+
+}
+
+void printDirecction(QString dir){
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(dir).append("</b></font>"));
+	ide->ui->langu->moveCursor (QTextCursor::End);
+
+}
+
+void printError(QString dir){
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	ide->ui->langu->insertHtml (QString("<font color=\"#FF5555\"><b>").append(dir).append("</b></font>"));
+	ide->ui->langu->moveCursor (QTextCursor::End);
+
+}
+
+void printDotComma(){
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>;</b></font>"));
+	ide->ui->langu->moveCursor (QTextCursor::End);
+}
+
+void printOperator(char op){
+	ide->ui->langu->moveCursor (QTextCursor::End);
+	ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>").append(op).append("</b></font>"));
+	ide->ui->langu->moveCursor (QTextCursor::End);
+}
+
+int yyerror(const char* s ) {
+//	yyerrok;
+//	fprintf(stderr,"%s: %s at line %ld\n", s, yytext,line_counter);
+//    	yyclearin;
+//	err = 1;
+//	return err;
+}
