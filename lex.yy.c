@@ -1049,13 +1049,11 @@ case 36:
 YY_RULE_SETUP
 #line 148 "lexer.l"
 {
-	/**
-	int current = 0;
-	while(current < yyleng){
-	if (yytext[current] == '\n' | yytext[current++] == '\r')line_counter++;
+	/*	
+	if (strcmp(yytext,"") == 0){
+		identifierstr = (char*)malloc(sizeof(char)*yyleng + sizeof(char));yylval.space = identifierstr;
+		return WHITE_SPACE;
 	}
-	*/
-	if (strcmp(yytext,"") == 0){identifierstr = (char*)malloc(sizeof(char)*yyleng + sizeof(char));yylval.space = identifierstr;return WHITE_SPACE;}
 	free( identifierstr);
 	identifierstr = (char*)malloc(sizeof(char)*yyleng + sizeof(char));
 	memcpy(identifierstr, yytext, yyleng);
@@ -1063,60 +1061,61 @@ YY_RULE_SETUP
 	spaces.push_back(identifierstr);
 	identifierstr = 0;
 	yylval.space = identifierstr;
+	*/
 	printCurrentSpace();
 }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 167 "lexer.l"
+#line 166 "lexer.l"
 {return OPERATOR;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 168 "lexer.l"
+#line 167 "lexer.l"
 {return LEFT_BLOCK_BRACKED;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 169 "lexer.l"
+#line 168 "lexer.l"
 {return RIGHT_BLOCK_BRACKED;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 171 "lexer.l"
+#line 170 "lexer.l"
 {return EQUAL;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 172 "lexer.l"
+#line 171 "lexer.l"
 {return NOT_EQUAL;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 173 "lexer.l"
+#line 172 "lexer.l"
 {return HIGH;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 174 "lexer.l"
+#line 173 "lexer.l"
 {return LESS;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 175 "lexer.l"
+#line 174 "lexer.l"
 {return EQUAL_HIGH;}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 176 "lexer.l"
+#line 175 "lexer.l"
 {return EQUAL_LESS;}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 179 "lexer.l"
+#line 178 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 1120 "lex.yy.c"
+#line 1119 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2126,7 +2125,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 179 "lexer.l"
+#line 178 "lexer.l"
 
 
 

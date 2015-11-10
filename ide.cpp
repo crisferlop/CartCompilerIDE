@@ -5,6 +5,7 @@
 #include "y.tab.c"
 #include "qfile.h"
 #include <QTextBlock>
+#include <QScrollBar>
 
 IDE::IDE(QWidget *parent) :
     QMainWindow(parent),
@@ -26,26 +27,35 @@ IDE::~IDE()
 void IDE::on_pushButton_clicked()
 {
 
-    mut.lock();
     //QFile *m = new QFile("temp");
-    ui->langu->setEnabled(false);
+    //QTextCursor cursor(ui->langu->textCursor());
+    //QTextCursor repair(ui->langu->textCursor());
+    //repair.movePosition(QTextCursor::End,QTextCursor::KeepAnchor);
+    ui->langu->textCursor();
+    ui->langu->setReadOnly(true);
     //m->remove();
     //m->open(QFile::WriteOnly);
     //m->write(ui->langu->toPlainText().toStdString().c_str());
     //m->close();
     QString T =ui->langu->toPlainText();
-    QTextCursor cursor = ui->langu->textCursor();
-    ui->langu->setText("");
+    char* s = (char*)malloc(sizeof(char)*T.length()+sizeof(char));
+    s[T.size()] = '\0';
+
+    strcpy(s,T.toStdString().c_str());
+    //ui->langu->setTextCursor(repair);
+    //ui->langu->setText("");
     ui->errors->setText("");
-    qDebug() << T;
+
+    //qDebug() << T;
     //delete m;
     onEdit = true;
+    int scroll = ui->langu->verticalScrollBar()->value();
     if (T.compare("") != 0)
-    test(T.toStdString().c_str(),this);
-    ui->langu->setTextCursor(cursor);
+    test(s,this);
+    //ui->langu->setFocus();
+    ui->langu->setReadOnly(false);
+    ui->langu->verticalScrollBar()->setValue(scroll);
     onEdit = false;
-    ui->langu->setEnabled(true);
-    mut.unlock();
 }
 
 void IDE::on_langu_cursorPositionChanged()

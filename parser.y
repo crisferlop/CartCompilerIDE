@@ -6,13 +6,24 @@
 	#include "ide.h"
 	#include "stdlib.h"
 	#include "qvariant.h"
+	#include <QTextBlock>
+
 	int line_counter = 1;
 	short err = 0;
 	short debug = 0;
 	long block = 0;
 	std::vector< VarInt * > BlockList;
-	std::vector< char * > spaces;
 	IDE *ide = 0;
+	int pos = 0;
+	QTextCursor cursor;
+
+	QColor reservedWord(35,115,85);
+	QColor normalToken(255,255,255);
+	QColor directions(85,170,102);
+	QColor errorColor(255,85,85);
+	QColor identifierColor(18,122,122);
+	QColor numberValueColor(18,122,122);
+
 	//typedef struct yy_buffer_state * YY_BUFFER_STATE;
 void printCurrentSpace();
 %}
@@ -92,7 +103,7 @@ initial:
 expresion:
 	simple_expresion
 	| errStatement simple_expresion
-	| errStatement DOTCOMA {printDotComma();}
+	| errStatement END {return 0;}
 	| FOR_CYCLE {printResevedWord("For");} ForContinue
 	| WHEN {printResevedWord("When");} WhenContinue
 ;
@@ -152,11 +163,12 @@ PrintContinue:
 WhenContinue:
 	condition THEN {printResevedWord("Then");}
 	LEFT_BLOCK_BRACKED {printOperator('{');}
-	initial
+	block
 	RIGHT_BLOCK_BRACKED {printOperator('}');}
 	WHEND {printResevedWord("Whend");} DOTCOMA {printDotComma();}
-	
 ;
+
+
 
 ForContinue:
 	mathematicExpresion
@@ -164,12 +176,18 @@ ForContinue:
 	LEFT_SQUARE_BRACKED {printOperator('[');}
 	WALK {printResevedWord("Walk");} mathematicExpresion identif RIGHT_SQUARE_BRACKED {printOperator(']');}
 	LEFT_BLOCK_BRACKED {printOperator('{');}
-	initial
+	block
 	RIGHT_BLOCK_BRACKED {printOperator('}');}
 	ForContinue2
 ;
 ForContinue2:
 	FOREND {printResevedWord("ForEnd");} DOTCOMA {printDotComma();} 
+;
+
+
+block:
+	initial
+	| /***/
 ;
 
 
@@ -248,76 +266,101 @@ turndirection:
 %%
 
 #include "lex.yy.c"
-int test(const char *s, IDE * pide){
+int test(char *s, IDE * pide){
+	pos = 0;
 	line_counter= yylineno = 1;
-	printf("Test?\n");
 	ide = pide;
-	char* ss = (char*)malloc(strlen(s)+1);
-	ss[strlen(s)] = '\0';
-	strcpy(ss,s);
-	printf("file: \n %s\n", ss);
-	YY_BUFFER_STATE buffer =yy_scan_string(ss);
+	YY_BUFFER_STATE buffer =yy_scan_string(s);
 	//yyin = fopen(s,"r");
+	int position(ide->ui->langu->textCursor().position());
+	//ide->ui->langu->setFocus();
+	ide->ui->langu->moveCursor(QTextCursor::End);
+	ide->ui->langu->moveCursor(QTextCursor::Start,QTextCursor::KeepAnchor);
+	cursor = QTextCursor(ide->ui->langu->textCursor());
 	yyparse();
+	//QTextCursor cursor(ide->ui->langu->textCursor());
+	//ide->ui->langu->moveCursor(QTextCursor::End);
+	//cursor.setCharFormat(charFormat);
+	//qDebug() << "End: "<<cursor.position() ;
+	cursor.setPosition(position);
+	ide->ui->langu->setTextCursor(cursor);
 	//fclose(yyin);
 	return 0;
 }
 
+
+void setFormat(int length, QColor pColor){
+	//QTextCursor cursor(ide->ui->langu->textCursor());
+	QTextCharFormat charFormat = cursor.charFormat();
+        charFormat.setFont(QFont("Ubuntu", 11, QFont::Bold));
+        charFormat.setForeground(QBrush(pColor));
+	cursor.setCharFormat(charFormat);
+	cursor.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor,length);
+	//ide->ui->langu->setTextCursor(cursor);
+}
+
+
 void printResevedWord(QString word){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#237355\"><b>").append(word).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(word.length(), reservedWord);
+	//ide->ui->langu->moveCursor(yyleng,QTextCursor::KeepAnchor);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#237355\"><b>").append(word).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 
 void printCurrentSpace(){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	if (spaces.size() > 0){
-	ide->ui->langu->insertPlainText(spaces.front());
-	free(spaces.front());
-	spaces.erase(spaces.begin());
-	}
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(yyleng, normalToken);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 
 void printNumberValue(int num){
 	QVariant word(num);
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#B7CE06\">").append(word.toString()).append("</font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(word.toString().length(), numberValueColor);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#B7CE06\">").append(word.toString()).append("</font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printIdentifier(QString id){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(id).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(id.length(), identifierColor);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(id).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printDirecction(QString dir){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(dir).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(dir.length(), directions);	
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(dir).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printError(QString dir){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#FF5555\"><b>").append(dir).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(dir.length(), errorColor);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#FF5555\"><b>").append(dir).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printDotComma(){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>;</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(1, normalToken);
+	//ide->ui->langu->textCursor().setPosition(pos,QTextCursor::KeepAnchor);
+	//ide->ui->langu->moveCursor(yyleng,QTextCursor::KeepAnchor);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>;</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 
 void printOperator(char op){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>").append(op).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(1, normalToken);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>").append(op).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 int yyerror(const char* s ) {
 	yyerrok;

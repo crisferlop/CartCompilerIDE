@@ -12,7 +12,7 @@ void Renderizer::run()
         m.lock();
         emit updateText();
         m.unlock();
-        this->msleep(15000);
+        this->msleep(5000);
 
     }
 }

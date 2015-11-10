@@ -24,16 +24,27 @@ static const char yysccsid[] = "@(#)yaccpar	1.9 (Berkeley) 02/21/93";
 	#include "ide.h"
 	#include "stdlib.h"
 	#include "qvariant.h"
+	#include <QTextBlock>
+
 	int line_counter = 1;
 	short err = 0;
 	short debug = 0;
 	long block = 0;
 	std::vector< VarInt * > BlockList;
-	std::vector< char * > spaces;
 	IDE *ide = 0;
+	int pos = 0;
+	QTextCursor cursor;
+
+	QColor reservedWord(35,115,85);
+	QColor normalToken(255,255,255);
+	QColor directions(85,170,102);
+	QColor errorColor(255,85,85);
+	QColor identifierColor(18,122,122);
+	QColor numberValueColor(18,122,122);
+
 	/*typedef struct yy_buffer_state * YY_BUFFER_STATE;*/
 void printCurrentSpace();
-#line 20 "parser.y"
+#line 31 "parser.y"
 #ifdef YYSTYPE
 #undef  YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
@@ -46,7 +57,7 @@ typedef union{
 	int integer;
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
-#line 49 "y.tab.c"
+#line 60 "y.tab.c"
 
 /* compatibility with bison */
 #ifdef YYPARSE_PARAM
@@ -132,10 +143,10 @@ static const short yylhs[] = {                           -1,
    11,    4,   13,    4,   15,    4,   17,    4,   18,    4,
    20,    4,   22,    4,   24,    4,   10,   26,   27,   10,
    28,   29,   31,   12,   14,   33,   14,   16,   34,   19,
-   35,   36,   21,   23,   38,   39,   40,   41,    8,   42,
-   43,   44,   45,   46,   48,    6,   49,   47,   37,   50,
-   50,   50,   50,   50,   50,    5,    5,   30,    1,   51,
-    1,    2,    2,   25,   25,   32,   32,
+   35,   36,   21,   23,   38,   40,   41,   42,    8,   43,
+   44,   45,   46,   47,   49,    6,   50,   48,   39,   39,
+   37,   51,   51,   51,   51,   51,   51,    5,    5,   30,
+    1,   52,    1,    2,    2,   25,   25,   32,   32,
 };
 static const short yylen[] = {                            2,
     1,    2,    1,    1,    2,    2,    0,    3,    0,    3,
@@ -143,47 +154,47 @@ static const short yylen[] = {                            2,
     0,    3,    0,    3,    0,    3,    2,    0,    0,    7,
     0,    0,    0,    9,    2,    0,    3,    1,    0,    4,
     0,    0,    6,    1,    0,    0,    0,    0,   11,    0,
-    0,    0,    0,    0,    0,   17,    0,    3,    3,    1,
-    1,    1,    1,    1,    1,    1,    2,    1,    1,    0,
-    4,    1,    1,    1,    1,    1,    1,
+    0,    0,    0,    0,    0,   17,    0,    3,    1,    0,
+    3,    1,    1,    1,    1,    1,    1,    1,    2,    1,
+    1,    0,    4,    1,    1,    1,    1,    1,    1,
 };
 static const short yydefred[] = {                         0,
-   66,   23,   13,   11,   15,    7,    9,   17,   19,   21,
+   68,   23,   13,   11,   15,    7,    9,   17,   19,   21,
    25,    3,    0,    0,    4,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    2,   67,    6,    5,
-   68,   24,    0,   73,   72,    0,    0,   14,   75,   74,
-   12,    0,   76,   77,   36,   16,    0,    0,    8,    0,
+    0,    0,    0,    0,    0,    0,    2,   69,    6,    5,
+   70,   24,    0,   75,   74,    0,    0,   14,   77,   76,
+   12,    0,   78,   79,   36,   16,    0,    0,    8,    0,
    10,    0,   38,   18,   20,   39,   22,   44,   26,   41,
-   31,   70,   28,   27,    0,   35,   50,   60,   61,   62,
-   63,   64,   65,    0,   45,    0,    0,    0,    0,    0,
-   37,    0,   59,    0,    0,   42,   32,   71,    0,   51,
+   31,   72,   28,   27,    0,   35,   50,   62,   63,   64,
+   65,   66,   67,    0,   45,    0,    0,    0,    0,    0,
+   37,    0,   61,    0,    0,   42,   32,   73,    0,   51,
    46,   40,    0,    0,   29,    0,    0,   43,   33,    0,
-   52,    0,    0,   30,    0,   47,    0,    0,    0,   34,
-    0,   48,   53,    0,    0,   49,   54,    0,    0,   55,
-    0,   57,   56,    0,   58,
+   52,   59,    0,    0,   30,    0,   47,    0,    0,    0,
+   34,    0,   48,   53,    0,    0,   49,   54,    0,    0,
+   55,    0,   57,   56,    0,   58,
 };
-static const short yydgoto[] = {                         13,
+static const short yydgoto[] = {                        102,
    36,   37,   14,   15,   16,   49,   21,   51,   22,   41,
    19,   38,   18,   46,   20,   54,   23,   24,   57,   25,
    32,   17,   59,   26,   42,   80,  100,   78,   94,   33,
-  103,   47,   65,   76,   77,   93,   52,   84,   97,  109,
-  114,   82,   96,  105,  115,  118,  123,  121,  124,   74,
-   79,
+  104,   47,   65,   76,   77,   93,   52,   84,  103,   97,
+  110,  115,   82,   96,  106,  116,  119,  124,  122,  125,
+   74,   79,
 };
 static const short yysindex[] = {                         1,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    1,    0, -250, -278, -262, -237, -253,
- -262, -262, -276, -276, -233, -262,    0,    0,    0,    0,
-    0,    0, -227,    0,    0, -223, -252,    0,    0,    0,
-    0, -255,    0,    0,    0,    0, -249, -232,    0, -275,
-    0, -243,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0, -248,    0,    0,    0,    0,    0,
-    0,    0,    0, -262,    0, -262, -214, -216, -262, -262,
-    0, -230,    0, -245, -242,    0,    0,    0, -209,    0,
-    0,    0, -239, -210,    0, -224,    1,    0,    0, -236,
-    0, -238, -278,    0, -262,    0, -231, -278, -225,    0,
- -217,    0,    0, -226, -229,    0,    0,    1, -228,    0,
- -213,    0,    0, -222,    0,
+    0,    0,    0,    1,    0,    6, -271, -268, -239, -261,
+ -268, -268, -263, -263, -240, -268,    0,    0,    0,    0,
+    0,    0, -228,    0,    0, -230, -259,    0,    0,    0,
+    0, -262,    0,    0,    0,    0, -256, -242,    0, -284,
+    0, -246,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0, -254,    0,    0,    0,    0,    0,
+    0,    0,    0, -268,    0, -268, -221, -223, -268, -268,
+    0, -237,    0, -252, -249,    0,    0,    0, -216,    0,
+    0,    0, -247, -218,    0, -232,    1,    0,    0, -244,
+    0,    0, -245, -271,    0, -268,    0, -243, -271, -233,
+    0, -227,    0,    0, -238, -234,    0,    0,    1, -231,
+    0, -229,    0,    0, -235,    0,
 };
 static const short yyrindex[] = {                         0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -195,32 +206,32 @@ static const short yyrindex[] = {                         0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0, -226,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0, -226,    0,
+    0,    0,    0,    0,    0,    0,
 };
-static const short yygindex[] = {                       -14,
-  -18,  -17,    0,   52,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,   46,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,  -95,
+static const short yygindex[] = {                        10,
+  -21,  -19,    0,   38,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,   36,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,  -87,
+    0,    0,    0,    0,    0,    0,    0,    0,  -57,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,
+    0,    0,
 };
-#define YYTABLESIZE 302
-static const short yytable[] = {                         27,
-   12,    1,   48,   69,   50,   28,    2,  107,   58,    3,
-   31,   63,  111,    4,   53,   43,   44,    5,   69,   68,
-   69,   70,   71,   72,   73,   34,   35,   39,   40,   56,
-   60,   69,   45,    8,    9,   64,   10,   61,   75,   62,
-   29,   66,   81,   67,   86,   87,   90,   91,   92,   95,
-   11,   98,   99,  101,  104,  106,   83,  112,   85,  110,
-   88,  113,   89,  117,  116,  120,  122,   30,  125,   55,
+#define YYTABLESIZE 307
+static const short yytable[] = {                         48,
+   12,    1,   50,   71,   63,   29,   58,   43,   44,   13,
+   68,   69,   70,   71,   72,   73,  108,   31,   71,   34,
+   35,  112,   56,   27,   45,   39,   40,   53,   64,   60,
+   61,   71,   62,   67,   66,   75,   81,   86,   87,   90,
+   91,   92,   95,   98,   99,  101,  105,  111,  107,  113,
+  123,  114,  117,   30,   83,  126,   85,   88,  118,   55,
+   89,  120,  121,    0,    0,    0,    0,   60,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,  102,    0,    0,    0,  108,    0,    0,    0,
+    0,    0,    0,    0,  109,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,  119,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -236,24 +247,24 @@ static const short yytable[] = {                         27,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    1,    2,    0,    0,
-    3,    0,    0,    0,    4,    0,    0,    0,    5,    0,
-    0,    0,    0,    0,    0,    6,    0,    0,    0,    0,
-    0,    7,    0,    0,    8,    9,    0,   10,    0,    0,
-    0,    0,    0,    0,    0,    1,    0,    0,    0,    0,
-    0,   11,
+    3,   28,    2,    0,    4,    3,    0,    0,    5,    4,
+    0,    0,    0,    5,    0,    6,    0,    0,    0,    0,
+    0,    7,    0,    0,    8,    9,    0,   10,    0,    8,
+    9,    0,   10,    0,    0,    1,    0,    0,    0,    0,
+    0,   11,    0,    0,    0,    0,   11,
 };
-static const short yycheck[] = {                         14,
-    0,    0,   21,  261,   22,  256,  257,  103,   26,  260,
-  289,  267,  108,  264,  291,  269,  270,  268,  276,  295,
-  296,  297,  298,  299,  300,  288,  289,  265,  266,  263,
-  258,  289,  286,  284,  285,  291,  287,  261,  282,  292,
-  291,  291,  291,  276,  259,  262,  277,  293,  291,  259,
-  301,  291,  263,  278,  291,  294,   74,  283,   76,  291,
-   79,  279,   80,  293,  291,  294,  280,   16,  291,   24,
+static const short yycheck[] = {                         21,
+    0,    0,   22,  261,  267,    0,   26,  269,  270,    0,
+  295,  296,  297,  298,  299,  300,  104,  289,  276,  288,
+  289,  109,  263,   14,  286,  265,  266,  291,  291,  258,
+  261,  289,  292,  276,  291,  282,  291,  259,  262,  277,
+  293,  291,  259,  291,  263,  278,  291,  291,  294,  283,
+  280,  279,  291,   16,   74,  291,   76,   79,  293,   24,
+   80,  119,  294,   -1,   -1,   -1,   -1,  294,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   97,   -1,   -1,   -1,  105,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,  106,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,  118,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
@@ -269,11 +280,11 @@ static const short yycheck[] = {                         14,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,  256,  257,   -1,   -1,
-  260,   -1,   -1,   -1,  264,   -1,   -1,   -1,  268,   -1,
-   -1,   -1,   -1,   -1,   -1,  275,   -1,   -1,   -1,   -1,
-   -1,  281,   -1,   -1,  284,  285,   -1,  287,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,  294,   -1,   -1,   -1,   -1,
-   -1,  301,
+  260,  256,  257,   -1,  264,  260,   -1,   -1,  268,  264,
+   -1,   -1,   -1,  268,   -1,  275,   -1,   -1,   -1,   -1,
+   -1,  281,   -1,   -1,  284,  285,   -1,  287,   -1,  284,
+  285,   -1,  287,   -1,   -1,  294,   -1,   -1,   -1,   -1,
+   -1,  301,   -1,   -1,   -1,   -1,  301,
 };
 #define YYFINAL 13
 #ifndef YYDEBUG
@@ -306,7 +317,7 @@ static const char *yyrule[] = {
 "initial : END",
 "expresion : simple_expresion",
 "expresion : errStatement simple_expresion",
-"expresion : errStatement DOTCOMA",
+"expresion : errStatement END",
 "$$1 :",
 "expresion : FOR_CYCLE $$1 ForContinue",
 "$$2 :",
@@ -349,16 +360,18 @@ static const char *yyrule[] = {
 "$$21 :",
 "$$22 :",
 "$$23 :",
-"WhenContinue : condition THEN $$20 LEFT_BLOCK_BRACKED $$21 initial RIGHT_BLOCK_BRACKED $$22 WHEND $$23 DOTCOMA",
+"WhenContinue : condition THEN $$20 LEFT_BLOCK_BRACKED $$21 block RIGHT_BLOCK_BRACKED $$22 WHEND $$23 DOTCOMA",
 "$$24 :",
 "$$25 :",
 "$$26 :",
 "$$27 :",
 "$$28 :",
 "$$29 :",
-"ForContinue : mathematicExpresion TIMES $$24 LEFT_SQUARE_BRACKED $$25 WALK $$26 mathematicExpresion identif RIGHT_SQUARE_BRACKED $$27 LEFT_BLOCK_BRACKED $$28 initial RIGHT_BLOCK_BRACKED $$29 ForContinue2",
+"ForContinue : mathematicExpresion TIMES $$24 LEFT_SQUARE_BRACKED $$25 WALK $$26 mathematicExpresion identif RIGHT_SQUARE_BRACKED $$27 LEFT_BLOCK_BRACKED $$28 block RIGHT_BLOCK_BRACKED $$29 ForContinue2",
 "$$30 :",
 "ForContinue2 : FOREND $$30 DOTCOMA",
+"block : initial",
+"block :",
 "condition : aValue comparator aValue",
 "comparator : EQUAL",
 "comparator : NOT_EQUAL",
@@ -415,79 +428,104 @@ typedef struct {
 } YYSTACKDATA;
 /* variables for the parser stack */
 static YYSTACKDATA yystack;
-#line 249 "parser.y"
+#line 267 "parser.y"
 
 #include "lex.yy.c"
-int test(const char *s, IDE * pide){
+int test(char *s, IDE * pide){
+	pos = 0;
 	line_counter= yylineno = 1;
-	printf("Test?\n");
 	ide = pide;
-	char* ss = (char*)malloc(strlen(s)+1);
-	ss[strlen(s)] = '\0';
-	strcpy(ss,s);
-	printf("file: \n %s\n", ss);
-	YY_BUFFER_STATE buffer =yy_scan_string(ss);
+	YY_BUFFER_STATE buffer =yy_scan_string(s);
 	//yyin = fopen(s,"r");
+	int position(ide->ui->langu->textCursor().position());
+	//ide->ui->langu->setFocus();
+	ide->ui->langu->moveCursor(QTextCursor::End);
+	ide->ui->langu->moveCursor(QTextCursor::Start,QTextCursor::KeepAnchor);
+	cursor = QTextCursor(ide->ui->langu->textCursor());
 	yyparse();
+	//QTextCursor cursor(ide->ui->langu->textCursor());
+	//ide->ui->langu->moveCursor(QTextCursor::End);
+	//cursor.setCharFormat(charFormat);
+	//qDebug() << "End: "<<cursor.position() ;
+	cursor.setPosition(position);
+	ide->ui->langu->setTextCursor(cursor);
 	//fclose(yyin);
 	return 0;
 }
 
+
+void setFormat(int length, QColor pColor){
+	//QTextCursor cursor(ide->ui->langu->textCursor());
+	QTextCharFormat charFormat = cursor.charFormat();
+        charFormat.setFont(QFont("Ubuntu", 11, QFont::Bold));
+        charFormat.setForeground(QBrush(pColor));
+	cursor.setCharFormat(charFormat);
+	cursor.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor,length);
+	//ide->ui->langu->setTextCursor(cursor);
+}
+
+
 void printResevedWord(QString word){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#237355\"><b>").append(word).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(word.length(), reservedWord);
+	//ide->ui->langu->moveCursor(yyleng,QTextCursor::KeepAnchor);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#237355\"><b>").append(word).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 
 void printCurrentSpace(){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	if (spaces.size() > 0){
-	ide->ui->langu->insertPlainText(spaces.front());
-	free(spaces.front());
-	spaces.erase(spaces.begin());
-	}
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(yyleng, normalToken);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 
 void printNumberValue(int num){
 	QVariant word(num);
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#B7CE06\">").append(word.toString()).append("</font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(word.toString().length(), numberValueColor);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#B7CE06\">").append(word.toString()).append("</font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printIdentifier(QString id){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(id).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(id.length(), identifierColor);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(id).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printDirecction(QString dir){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(dir).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(dir.length(), directions);	
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#55aa66\"><b>").append(dir).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printError(QString dir){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#FF5555\"><b>").append(dir).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(dir.length(), errorColor);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#FF5555\"><b>").append(dir).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 
 }
 
 void printDotComma(){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>;</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(1, normalToken);
+	//ide->ui->langu->textCursor().setPosition(pos,QTextCursor::KeepAnchor);
+	//ide->ui->langu->moveCursor(yyleng,QTextCursor::KeepAnchor);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>;</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 
 void printOperator(char op){
-	ide->ui->langu->moveCursor (QTextCursor::End);
-	ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>").append(op).append("</b></font>"));
-	ide->ui->langu->moveCursor (QTextCursor::End);
+	setFormat(1, normalToken);
+	//ide->ui->langu->moveCursor (QTextCursor::End);
+	//ide->ui->langu->insertHtml (QString("<font color=\"#FFFFFF\"><b>").append(op).append("</b></font>"));
+	//ide->ui->langu->moveCursor (QTextCursor::End);
 }
 int yyerror(const char* s ) {
 	yyerrok;
@@ -498,7 +536,7 @@ int yyerror(const char* s ) {
 //	return err;
 }
 
-#line 500 "y.tab.c"
+#line 538 "y.tab.c"
 
 #if YYDEBUG
 #include <stdio.h>		/* needed for printf */
@@ -701,199 +739,199 @@ yyreduce:
     switch (yyn)
     {
 case 3:
-#line 89 "parser.y"
+#line 100 "parser.y"
 	{return 0;}
 break;
 case 6:
-#line 95 "parser.y"
-	{printDotComma();}
+#line 106 "parser.y"
+	{return 0;}
 break;
 case 7:
-#line 96 "parser.y"
+#line 107 "parser.y"
 	{printResevedWord("For");}
 break;
 case 9:
-#line 97 "parser.y"
+#line 108 "parser.y"
 	{printResevedWord("When");}
 break;
 case 11:
-#line 103 "parser.y"
+#line 114 "parser.y"
 	{printResevedWord("Go");}
 break;
 case 13:
-#line 104 "parser.y"
+#line 115 "parser.y"
 	{ printResevedWord("Value"); }
 break;
 case 15:
-#line 105 "parser.y"
+#line 116 "parser.y"
 	{ printResevedWord("Turn"); }
 break;
 case 17:
-#line 106 "parser.y"
+#line 117 "parser.y"
 	{ printResevedWord("Start"); }
 break;
 case 19:
-#line 107 "parser.y"
+#line 118 "parser.y"
 	{ printResevedWord("Stop"); }
 break;
 case 21:
-#line 108 "parser.y"
+#line 119 "parser.y"
 	{printResevedWord("Rest");}
 break;
 case 23:
-#line 109 "parser.y"
+#line 120 "parser.y"
 	{printResevedWord("Define");}
 break;
 case 25:
-#line 110 "parser.y"
+#line 121 "parser.y"
 	{printResevedWord("print");}
 break;
 case 27:
-#line 115 "parser.y"
+#line 126 "parser.y"
 	{printDotComma();}
 break;
 case 28:
-#line 116 "parser.y"
+#line 127 "parser.y"
 	{printResevedWord("Till");}
 break;
 case 29:
-#line 116 "parser.y"
+#line 127 "parser.y"
 	{printResevedWord("Blocks");}
 break;
 case 30:
-#line 117 "parser.y"
+#line 128 "parser.y"
 	{printDotComma();}
 break;
 case 31:
-#line 122 "parser.y"
+#line 133 "parser.y"
 	{ printResevedWord("set");}
 break;
 case 32:
-#line 123 "parser.y"
+#line 134 "parser.y"
 	{printResevedWord("out");}
 break;
 case 33:
-#line 124 "parser.y"
+#line 135 "parser.y"
 	{printResevedWord("for");}
 break;
 case 34:
-#line 125 "parser.y"
+#line 136 "parser.y"
 	{printDotComma();}
 break;
 case 35:
-#line 129 "parser.y"
+#line 140 "parser.y"
 	{printDotComma();}
 break;
 case 36:
-#line 130 "parser.y"
+#line 141 "parser.y"
 	{printResevedWord("On");}
 break;
 case 37:
-#line 130 "parser.y"
+#line 141 "parser.y"
 	{printDotComma();}
 break;
 case 38:
-#line 135 "parser.y"
+#line 146 "parser.y"
 	{printDotComma();}
 break;
 case 39:
-#line 139 "parser.y"
+#line 150 "parser.y"
 	{printResevedWord("for");}
 break;
 case 40:
-#line 139 "parser.y"
+#line 150 "parser.y"
 	{printDotComma();}
 break;
 case 41:
-#line 144 "parser.y"
+#line 155 "parser.y"
 	{printResevedWord("as");}
 break;
 case 42:
-#line 144 "parser.y"
+#line 155 "parser.y"
 	{printResevedWord("Blocks");}
 break;
 case 43:
-#line 144 "parser.y"
+#line 155 "parser.y"
 	{printDotComma();}
 break;
 case 45:
-#line 153 "parser.y"
+#line 164 "parser.y"
 	{printResevedWord("Then");}
 break;
 case 46:
-#line 154 "parser.y"
+#line 165 "parser.y"
 	{printOperator('{');}
 break;
 case 47:
-#line 156 "parser.y"
+#line 167 "parser.y"
 	{printOperator('}');}
 break;
 case 48:
-#line 157 "parser.y"
+#line 168 "parser.y"
 	{printResevedWord("Whend");}
 break;
 case 49:
-#line 157 "parser.y"
+#line 168 "parser.y"
 	{printDotComma();}
 break;
 case 50:
-#line 163 "parser.y"
+#line 175 "parser.y"
 	{printResevedWord("Times");}
 break;
 case 51:
-#line 164 "parser.y"
+#line 176 "parser.y"
 	{printOperator('[');}
 break;
 case 52:
-#line 165 "parser.y"
+#line 177 "parser.y"
 	{printResevedWord("Walk");}
 break;
 case 53:
-#line 165 "parser.y"
+#line 177 "parser.y"
 	{printOperator(']');}
 break;
 case 54:
-#line 166 "parser.y"
+#line 178 "parser.y"
 	{printOperator('{');}
 break;
 case 55:
-#line 168 "parser.y"
+#line 180 "parser.y"
 	{printOperator('}');}
 break;
 case 57:
-#line 172 "parser.y"
+#line 184 "parser.y"
 	{printResevedWord("ForEnd");}
 break;
 case 58:
-#line 172 "parser.y"
+#line 184 "parser.y"
 	{printDotComma();}
 break;
-case 60:
-#line 182 "parser.y"
+case 62:
+#line 200 "parser.y"
 	{printOperator('=');}
 break;
-case 61:
-#line 183 "parser.y"
+case 63:
+#line 201 "parser.y"
 	{printOperator('!');printOperator('=');}
 break;
-case 62:
-#line 184 "parser.y"
+case 64:
+#line 202 "parser.y"
 	{printOperator('>');}
 break;
-case 63:
-#line 185 "parser.y"
+case 65:
+#line 203 "parser.y"
 	{printOperator('<');}
 break;
-case 64:
-#line 186 "parser.y"
+case 66:
+#line 204 "parser.y"
 	{printOperator('>');printOperator('=');}
 break;
-case 65:
-#line 187 "parser.y"
+case 67:
+#line 205 "parser.y"
 	{printOperator('<');printOperator('=');}
 break;
-case 66:
-#line 193 "parser.y"
+case 68:
+#line 211 "parser.y"
 	{
 	yyerrok;
 	printError(yytext);
@@ -903,8 +941,8 @@ case 66:
 	yyclearin;
 }
 break;
-case 67:
-#line 202 "parser.y"
+case 69:
+#line 220 "parser.y"
 	{
 	yyerrok;
 	QVariant word(yylineno);
@@ -914,41 +952,41 @@ case 67:
 	yyclearin;
 }
 break;
-case 68:
-#line 219 "parser.y"
+case 70:
+#line 237 "parser.y"
 	{printIdentifier(yystack.l_mark[0].str);}
 break;
-case 70:
-#line 224 "parser.y"
+case 72:
+#line 242 "parser.y"
 	{printOperator('+');}
 break;
-case 72:
-#line 229 "parser.y"
+case 74:
+#line 247 "parser.y"
 	{
 		printIdentifier(yystack.l_mark[0].str);
 	}
 break;
-case 73:
-#line 233 "parser.y"
+case 75:
+#line 251 "parser.y"
 	{printNumberValue(yystack.l_mark[0].integer);}
 break;
-case 74:
-#line 238 "parser.y"
+case 76:
+#line 256 "parser.y"
 	{printDirecction("Straight");}
 break;
-case 75:
-#line 239 "parser.y"
+case 77:
+#line 257 "parser.y"
 	{printf("in Back\n");printDirecction("Back");}
 break;
-case 76:
-#line 243 "parser.y"
+case 78:
+#line 261 "parser.y"
 	{printDirecction("Left");}
 break;
-case 77:
-#line 244 "parser.y"
+case 79:
+#line 262 "parser.y"
 	{printDirecction("Right");}
 break;
-#line 950 "y.tab.c"
+#line 988 "y.tab.c"
     }
     yystack.s_mark -= yym;
     yystate = *yystack.s_mark;

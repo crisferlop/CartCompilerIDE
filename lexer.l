@@ -143,16 +143,15 @@ RightBlockBracked \}
 	memcpy(identifierstr, yytext, yyleng);
 	identifierstr[sizeof(char)*yyleng] = '\0';
 	yylval.str = identifierstr;
-	return IDENTIFIER;}
+	return IDENTIFIER;
+}
 
 {whitespace} {
-	/**
-	int current = 0;
-	while(current < yyleng){
-	if (yytext[current] == '\n' | yytext[current++] == '\r')line_counter++;
+	/*	
+	if (strcmp(yytext,"") == 0){
+		identifierstr = (char*)malloc(sizeof(char)*yyleng + sizeof(char));yylval.space = identifierstr;
+		return WHITE_SPACE;
 	}
-	*/
-	if (strcmp(yytext,"") == 0){identifierstr = (char*)malloc(sizeof(char)*yyleng + sizeof(char));yylval.space = identifierstr;return WHITE_SPACE;}
 	free( identifierstr);
 	identifierstr = (char*)malloc(sizeof(char)*yyleng + sizeof(char));
 	memcpy(identifierstr, yytext, yyleng);
@@ -160,6 +159,7 @@ RightBlockBracked \}
 	spaces.push_back(identifierstr);
 	identifierstr = 0;
 	yylval.space = identifierstr;
+	*/
 	printCurrentSpace();
 }
 
