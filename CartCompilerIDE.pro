@@ -16,10 +16,14 @@ SOURCES += main.cpp\
 		ide.cpp\
 y.tab.c\
 varint.cpp \
-    Updater.cpp
+    Updater.cpp \
+    codeblock.cpp \
+    codesentence.cpp
 HEADERS  += ide.h\
 y.tab.h\
 varint.h \
-    Updater.h
+    Updater.h \
+    codeblock.h \
+    codesentence.h
 
 FORMS    += ide.ui
